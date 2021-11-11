@@ -1,0 +1,16 @@
+[package]
+name = "ads2022"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+bench = []
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "unionfind"
+path = "benches/unionfind/bench.rs"
+harness = false
+required-features = ["bench"]
