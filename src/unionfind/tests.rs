@@ -30,7 +30,7 @@ fn union_connects() {
     let a = Site(0);
     let b = Site(8);
     assert!(!uf.connected(a, b));
-    uf.union_generic(a, b, UnionFind::find_plain);
+    uf.union(a, b);
     assert!(uf.connected(a, b));
 }
 
@@ -40,7 +40,7 @@ fn union_lowers_count() {
     let a = Site(0);
     let b = Site(8);
     assert_eq!(uf.count(), 10);
-    uf.union_generic(a, b, UnionFind::find_plain);
+    uf.union(a, b);
     assert_eq!(uf.count(), 9);
 }
 
@@ -51,7 +51,7 @@ fn transitivly_connected() {
     let b = Site(8);
     let c = Site(4);
     assert!(!uf.connected(b, c));
-    uf.union_generic(a, b, UnionFind::find_plain);
-    uf.union_generic(a, c, UnionFind::find_plain);
+    uf.union(a, b);
+    uf.union(a, c);
     assert!(uf.connected(b, c));
 }
