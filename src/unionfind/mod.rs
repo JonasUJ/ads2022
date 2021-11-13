@@ -256,6 +256,7 @@ impl UnionFind {
                 std::intrinsics::assume(site.0 < self.id.len());
                 i += 1;
             }
+            i = std::cmp::min(i, seen.len());
             for j in 0..i {
                 let child = *seen.get_unchecked(j);
                 std::intrinsics::assume(child.0 < self.id.len());
@@ -273,6 +274,7 @@ impl UnionFind {
             site = self.id[site.0];
             i += 1;
         }
+        i = std::cmp::min(i, seen.len());
         for j in 0..i {
             let child = seen[j];
             self.id[child.0] = site;
