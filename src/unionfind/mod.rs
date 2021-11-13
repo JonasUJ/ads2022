@@ -42,12 +42,11 @@ impl UnionFind {
         }
 
         unsafe {
-            while {
+            while site != *self.id.get_unchecked(site.0) {
                 std::intrinsics::assume(site.0 < self.id.len());
                 self.id[site.0] = *self.id.get_unchecked(self.id[site.0].0);
                 site = self.id[site.0];
-                site != *self.id.get_unchecked(site.0)
-            } {} // Ugly do-while
+            }
         }
 
         Some(site)
@@ -146,6 +145,7 @@ impl UnionFind {
 #[cfg(any(test, feature = "bench"))]
 macro_rules! bounds_checked_find {
     ($name:ident, $self:ident, $site:ident, $body:block) => {
+        #[inline]
         pub fn $name(&mut $self, mut $site: Site) -> Option<Site> {
             if $site.0 >= $self.id.len() {
                 return None;

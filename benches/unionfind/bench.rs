@@ -24,7 +24,22 @@ pub fn unionfind_benchmark(c: &mut Criterion) {
 
     let (uf, pairs) = read_test_file("./benches/unionfind/mediumUF.txt");
 
-    bench!("find", UnionFind::find, uf, pairs, group);
+    // Bench standard "find" differently because it uses `union` (as opposed to `union_generic`)
+    let uf_clone = uf.clone();
+    let pairs_clone = pairs.clone();
+    group.bench_function("find", move |b| {
+        b.iter_batched(
+            || uf_clone.clone(),
+            |mut uf| {
+                for (a, b) in &pairs_clone {
+                    uf.union(*a, *b);
+                }
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    // bench!("find", UnionFind::find, uf, pairs, group);
     bench!("find_plain", UnionFind::find_plain, uf, pairs, group);
     bench!(
         "find_plain_safe",
