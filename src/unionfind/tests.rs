@@ -25,7 +25,7 @@ test_find!(find_compress_one_do_while);
 test_find!(find_compress_one_do_while_safe);
 
 #[test]
-fn union_connects() {
+fn test_union_connects() {
     let mut uf = UnionFind::new(10);
     let a = Site(0);
     let b = Site(8);
@@ -35,7 +35,7 @@ fn union_connects() {
 }
 
 #[test]
-fn union_lowers_count() {
+fn test_union_lowers_count() {
     let mut uf = UnionFind::new(10);
     let a = Site(0);
     let b = Site(8);
@@ -45,7 +45,7 @@ fn union_lowers_count() {
 }
 
 #[test]
-fn transitivly_connected() {
+fn test_transitivly_connected() {
     let mut uf = UnionFind::new(10);
     let a = Site(0);
     let b = Site(8);
