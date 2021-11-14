@@ -98,6 +98,7 @@ impl UnionFind {
     }
 
     /// Tell whether two sites are part of the same component.
+    /// This has side-effects resulting from the path compression of UnionFind::find.
     ///
     /// # Arguments
     ///
@@ -119,8 +120,8 @@ impl UnionFind {
     /// uf.union(b, c);
     /// assert!(uf.connected(a, b));
     /// ```
-    pub fn connected(&self, a: Site, b: Site) -> bool {
-        self.id[a.0] == self.id[b.0]
+    pub fn connected(&mut self, a: Site, b: Site) -> bool {
+        self.find(a) == self.find(b)
     }
 
     /// The number of components.
