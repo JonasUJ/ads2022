@@ -22,7 +22,7 @@ impl UnionFind {
         }
     }
 
-    /// The component the site belongs to. Returns None of out of bounds.
+    /// The component the site belongs to. Returns None if out of bounds.
     ///
     /// # Arguments
     ///
@@ -35,6 +35,11 @@ impl UnionFind {
     /// let a = Site(0);
     /// let b = Site(2);
     /// let c = Site(4);
+    ///
+    /// assert_eq!(uf.find(a).unwrap(), a);
+    /// uf.union(b, c);
+    /// uf.union(a, c);
+    /// assert_eq!(uf.find(a).unwrap(), b);
     /// ```
     pub fn find(&mut self, mut site: Site) -> Option<Site> {
         if site.0 >= self.id.len() {
@@ -42,14 +47,44 @@ impl UnionFind {
         }
 
         unsafe {
-            while site != *self.id.get_unchecked(site.0) {
-                std::intrinsics::assume(site.0 < self.id.len());
-                self.id[site.0] = *self.id.get_unchecked(self.id[site.0].0);
-                site = self.id[site.0];
-            }
+            site = self.find_unchecked(site);
         }
 
         Some(site)
+    }
+
+    /// The component the site belongs to. UB if out of bounds.
+    ///
+    /// # Arguments
+    ///
+    /// * `site` - The site to find the component of.
+    ///
+    /// # Examples
+    /// ```
+    /// use ads2022::unionfind::{UnionFind, Site};
+    /// let mut uf = UnionFind::new(5);
+    /// let a = Site(0);
+    /// let b = Site(2);
+    /// let c = Site(4);
+    /// let d = Site(6);
+    ///
+    /// unsafe {
+    ///     assert_eq!(uf.find_unchecked(a), a);
+    ///     uf.union(b, c);
+    ///     uf.union(a, c);
+    ///     assert_eq!(uf.find_unchecked(a), b);
+    ///     // UB
+    ///     // assert_eq!(uf.find_unchecked(d), d);
+    /// }
+    /// ```
+    pub unsafe fn find_unchecked(&mut self, mut site: Site) -> Site {
+        while site != *self.id.get_unchecked(site.0) {
+            std::intrinsics::assume(site.0 < self.id.len());
+            self.id[site.0] = *self.id.get_unchecked(self.id[site.0].0);
+            site = self.id[site.0];
+        }
+
+        site
     }
 
     /// Connect two sites.
@@ -75,26 +110,59 @@ impl UnionFind {
         let b = self.find(b);
 
         if let (Some(a), Some(b)) = (a, b) {
-            if a == b {
-                return;
-            }
-            unsafe {
-                std::intrinsics::assume(
-                    self.sz.len() > a.0
-                        && self.sz.len() > b.0
-                        && self.id.len() > a.0
-                        && self.id.len() > b.0,
-                );
-            }
-            if self.sz[a.0] < self.sz[b.0] {
-                self.id[a.0] = b;
-                self.sz[b.0] += self.sz[a.0];
-            } else {
-                self.id[b.0] = a;
-                self.sz[a.0] += self.sz[b.0];
-            }
-            self.count -= 1;
+            self.union_impl(a, b);
         }
+    }
+
+    /// Connect two sites. UB if a site is out of bounds.
+    ///
+    /// # Arguments
+    ///
+    /// * `a` - First site.
+    /// * `b` - Second site.
+    ///
+    /// # Examples
+    /// ```
+    /// use ads2022::unionfind::{UnionFind, Site};
+    /// let mut uf = UnionFind::new(5);
+    /// let a = Site(0);
+    /// let b = Site(2);
+    /// let c = Site(6);
+    ///
+    /// unsafe {
+    ///     assert!(!uf.connected(a, b));
+    ///     uf.union_unchecked(a, b);
+    ///     assert!(uf.connected(a, b));
+    ///     // UB
+    ///     // uf.union_unchecked(a, c);
+    /// }
+    /// ```
+    pub unsafe fn union_unchecked(&mut self, a: Site, b: Site) {
+        let a = self.find_unchecked(a);
+        let b = self.find_unchecked(b);
+        self.union_impl(a, b);
+    }
+
+    fn union_impl(&mut self, a: Site, b: Site) {
+        if a == b {
+            return;
+        }
+        unsafe {
+            std::intrinsics::assume(
+                self.sz.len() > a.0
+                    && self.sz.len() > b.0
+                    && self.id.len() > a.0
+                    && self.id.len() > b.0,
+            );
+        }
+        if self.sz[a.0] < self.sz[b.0] {
+            self.id[a.0] = b;
+            self.sz[b.0] += self.sz[a.0];
+        } else {
+            self.id[b.0] = a;
+            self.sz[a.0] += self.sz[b.0];
+        }
+        self.count -= 1;
     }
 
     /// Tell whether two sites are part of the same component.
@@ -167,25 +235,7 @@ impl UnionFind {
         let b = find(self, b);
 
         if let (Some(a), Some(b)) = (a, b) {
-            if a == b {
-                return;
-            }
-            unsafe {
-                std::intrinsics::assume(
-                    self.sz.len() > a.0
-                        && self.sz.len() > b.0
-                        && self.id.len() > a.0
-                        && self.id.len() > b.0,
-                );
-            }
-            if self.sz[a.0] < self.sz[b.0] {
-                self.id[a.0] = b;
-                self.sz[b.0] += self.sz[a.0];
-            } else {
-                self.id[b.0] = a;
-                self.sz[a.0] += self.sz[b.0];
-            }
-            self.count -= 1;
+            self.union_impl(a, b);
         }
     }
 
