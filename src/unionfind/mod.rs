@@ -1,6 +1,11 @@
+//! This module provides a [`UnionFind`] struct that keeps track of connections in an undirected
+//! graph.
+
+/// Represents a node in the [`UnionFind`].
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub struct Site(pub usize);
 
+/// A [`Site`] container that also stores a representation of their connections.
 #[derive(Clone)]
 pub struct UnionFind {
     count: usize,
@@ -9,7 +14,7 @@ pub struct UnionFind {
 }
 
 impl UnionFind {
-    /// New UnionFind struct with given size.
+    /// New [`UnionFind`] struct with given size.
     ///
     /// # Arguments
     ///
@@ -17,18 +22,15 @@ impl UnionFind {
     pub fn new(count: usize) -> Self {
         UnionFind {
             count,
-            id: (0..count).map(|n| Site(n)).collect(),
+            id: (0..count).map(Site).collect(),
             sz: vec![1; count],
         }
     }
 
-    /// The component the site belongs to. Returns None if out of bounds.
-    ///
-    /// # Arguments
-    ///
-    /// * `site` - The site to find the component of.
+    /// The component the site belongs to. Returns [`None`] if out of bounds.
     ///
     /// # Examples
+    ///
     /// ```
     /// use ads2022::unionfind::{UnionFind, Site};
     /// let mut uf = UnionFind::new(5);
@@ -54,13 +56,14 @@ impl UnionFind {
         Some(site)
     }
 
-    /// The component the site belongs to. UB if out of bounds.
+    /// The component the site belongs to.
     ///
-    /// # Arguments
+    /// # Safety
     ///
-    /// * `site` - The site to find the component of.
+    /// `site` must be contained in `self`.
     ///
     /// # Examples
+    ///
     /// ```
     /// use ads2022::unionfind::{UnionFind, Site};
     /// let mut uf = UnionFind::new(5);
@@ -96,6 +99,7 @@ impl UnionFind {
     /// * `b` - Second site.
     ///
     /// # Examples
+    ///
     /// ```
     /// use ads2022::unionfind::{UnionFind, Site};
     /// let mut uf = UnionFind::new(5);
@@ -115,14 +119,14 @@ impl UnionFind {
         }
     }
 
-    /// Connect two sites. UB if a site is out of bounds.
+    /// Connect two sites.
     ///
-    /// # Arguments
+    /// # Safety
     ///
-    /// * `a` - First site.
-    /// * `b` - Second site.
+    /// `a` and `b` must both lie within the bounds `self`.
     ///
     /// # Examples
+    ///
     /// ```
     /// use ads2022::unionfind::{UnionFind, Site};
     /// let mut uf = UnionFind::new(5);
@@ -171,12 +175,8 @@ impl UnionFind {
     /// Tell whether two sites are part of the same component.
     /// This has side-effects resulting from the path compression of UnionFind::find.
     ///
-    /// # Arguments
-    ///
-    /// * `a` - First site.
-    /// * `b` - Second site.
-    ///
     /// # Examples
+    ///
     /// ```
     /// use ads2022::unionfind::{UnionFind, Site};
     /// let mut uf = UnionFind::new(5);
@@ -198,6 +198,7 @@ impl UnionFind {
     /// The number of components.
     ///
     /// # Examples
+    ///
     /// ```
     /// use ads2022::unionfind::{UnionFind, Site};
     /// let mut uf = UnionFind::new(5);
@@ -228,6 +229,7 @@ macro_rules! bounds_checked_find {
     }
 }
 
+#[allow(missing_docs)]
 #[cfg(any(test, feature = "bench"))]
 impl UnionFind {
     pub fn union_generic<F>(&mut self, a: Site, b: Site, find: F)
@@ -329,14 +331,14 @@ impl UnionFind {
             i += 1;
         }
         i = std::cmp::min(i, seen.len());
-        for j in 0..i {
-            let child = seen[j];
+        for child in seen.iter().take(i) {
             self.id[child.0] = site;
         }
         site
     });
 }
 
+#[allow(missing_docs)]
 #[cfg(any(test, feature = "bench"))]
 pub fn read_test_file(filename: &str) -> (UnionFind, Vec<(Site, Site)>) {
     use std::fs;
