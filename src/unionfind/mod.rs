@@ -46,6 +46,7 @@ impl UnionFind {
             return None;
         }
 
+        // SAFETY: Bounds check done above.
         unsafe {
             site = self.find_unchecked(site);
         }
@@ -147,6 +148,8 @@ impl UnionFind {
         if a == b {
             return;
         }
+
+        // SAFETY: Bounds checking done callers.
         unsafe {
             std::intrinsics::assume(
                 self.sz.len() > a.0
