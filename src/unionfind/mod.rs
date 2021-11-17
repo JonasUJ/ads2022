@@ -115,7 +115,9 @@ impl UnionFind {
         let b = self.find(b);
 
         if let (Some(a), Some(b)) = (a, b) {
-            self.union_impl(a, b);
+            unsafe {
+                self.union_impl(a, b);
+            }
         }
     }
 
@@ -148,20 +150,19 @@ impl UnionFind {
         self.union_impl(a, b);
     }
 
-    fn union_impl(&mut self, a: Site, b: Site) {
+    unsafe fn union_impl(&mut self, a: Site, b: Site) {
         if a == b {
             return;
         }
 
-        // SAFETY: Bounds checking done callers.
-        unsafe {
-            std::intrinsics::assume(
-                self.sz.len() > a.0 as usize
-                    && self.sz.len() > b.0 as usize
-                    && self.id.len() > a.0 as usize
-                    && self.id.len() > b.0 as usize,
-            );
-        }
+        // SAFETY: Bounds checking done by callers.
+        std::intrinsics::assume(
+            self.sz.len() > a.0 as usize
+                && self.sz.len() > b.0 as usize
+                && self.id.len() > a.0 as usize
+                && self.id.len() > b.0 as usize,
+        );
+
         if self.sz[a.0 as usize] < self.sz[b.0 as usize] {
             self.id[a.0 as usize] = b;
             self.sz[b.0 as usize] += self.sz[a.0 as usize];
@@ -240,7 +241,9 @@ impl UnionFind {
         let b = find(self, b);
 
         if let (Some(a), Some(b)) = (a, b) {
-            self.union_impl(a, b);
+            unsafe {
+                self.union_impl(a, b);
+            }
         }
     }
 
@@ -264,7 +267,8 @@ impl UnionFind {
         unsafe {
             while site != *self.id.get_unchecked(site.0 as usize) {
                 std::intrinsics::assume((site.0 as usize) < self.id.len());
-                self.id[site.0 as usize] = *self.id.get_unchecked(self.id[site.0 as usize].0 as usize);
+                self.id[site.0 as usize] =
+                    *self.id.get_unchecked(self.id[site.0 as usize].0 as usize);
                 site = self.id[site.0 as usize];
             }
         }
@@ -283,7 +287,8 @@ impl UnionFind {
         unsafe {
             while {
                 std::intrinsics::assume((site.0 as usize) < self.id.len());
-                self.id[site.0 as usize] = *self.id.get_unchecked(self.id[site.0 as usize].0 as usize);
+                self.id[site.0 as usize] =
+                    *self.id.get_unchecked(self.id[site.0 as usize].0 as usize);
                 site = self.id[site.0 as usize];
                 site != *self.id.get_unchecked(site.0 as usize)
             } {}
