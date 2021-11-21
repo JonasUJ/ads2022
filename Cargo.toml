@@ -14,3 +14,9 @@ name = "unionfind"
 path = "benches/unionfind/bench.rs"
 harness = false
 required-features = ["bench"]
+
+[[bench]]
+name = "sort"
+path = "benches/sort/bench.rs"
+harness = false
+required-features = ["bench"]
