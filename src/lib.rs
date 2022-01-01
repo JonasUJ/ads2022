@@ -6,3 +6,4 @@
 
 pub mod unionfind;
 pub mod sort;
+pub mod collections;
